@@ -1,3 +1,5 @@
+Keyboard = {}
+
 App = {
 	debugMode : 1,
 	cycleDuration: 1000, //in miliseconds

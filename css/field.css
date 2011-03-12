@@ -20,8 +20,10 @@ body {
     margin: 25px auto;
     overflow: hidden;
     box-shadow: inset 1px 1px 3px 0px rgba(0, 0, 0, .6);
+    -webkit-box-shadow: inset 1px 1px 3px 0px rgba(0, 0, 0, .6);
     background: #ebcca9 url(../img/bg-darker.png) repeat left top;
     border-radius: 2px;
+    cursor:none;
 }
 
 #ball {
@@ -33,10 +35,11 @@ body {
     border-radius: 20px;
     background: #e00;
     box-shadow: 1px 1px 0 0 #333;
-    -webkit-transition: all ls linear;
-    -moz-transition: all ls linear;
-    -o-transition: all ls linear;
-    transition: all ls linear;
+    -webkit-box-shadow: 1px 1px 0 0 #333;
+    -webkit-transition: all 1s linear;
+    -moz-transition: all 1s linear;
+    -o-transition: all 1s linear;
+    transition: all 1s linear;
 }
 
 #racket {
@@ -47,6 +50,7 @@ body {
     left: 200px;
     border-radius: 3px 3px 0 0;
     box-shadow: 2px 2px 0 0 #333;
+	-webkit-box-shadow: 2px 2px 0 0 #333;
     background: #666;
     transition: all .2s linear;
     -webkit-transition: all .2s linear;
