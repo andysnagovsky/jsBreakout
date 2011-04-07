@@ -1,4 +1,3 @@
-
 function Keyboard(){
     this.key = {
         37: 'left',
@@ -22,7 +21,6 @@ function Keyboard(){
 		this.pressed[keyName] = false;
 	}
 }
-
 function Mouse(){
 	this.convertX = function( event ){
 		var x = event.clientX - ( document.body.clientWidth - field.width ) / 2;
@@ -35,7 +33,6 @@ function Mouse(){
 		this.shift = this.x - pad.left;
 	}
 }
-
 function Field(){
 	this.source = document.getElementById("field");
 	this.width = parseFloat(window.getComputedStyle(this.source, null).getPropertyValue("width"));
@@ -49,7 +46,6 @@ function Field(){
 		for ( id = 20; id < 30; id++ ) bricks[id] = new Brick(id, "p3");
 	}
 }
-
 function Pad(){
 	this.speed = { maximum: 300, x: 0}
 	this.x = 0;
@@ -64,39 +60,38 @@ function Pad(){
 	racket.style.left = window.getComputedStyle( racket, null ).getPropertyValue( "left" );
 
 	this.move = function(){
- 		if ( kbd.isPressed( 'right' ) || ms.shift > 0 && !kbd.isPressed('left')) {
+		this.speed.x = 0;
+ 		if (kbd.isPressed( 'right' ) || ms.shift > 0 && !kbd.isPressed('left')) {
 	        if ( this.left < this.path ) {
 	            ( ( this.path - this.left ) < step ) ? move = this.path - this.left : move = step;
 				
-				if (Math.abs(ms.shift) < move && ms.shift > 0)
-					move = Math.abs(ms.shift);
+				if (ms.shift < move && ms.shift > 0)
+					move = ms.shift;
 				
 				this.speed.x = move / App.cycleDuration;
 	            this.left += move;
 				ms.setShift();
 	        }
-	    } else if ( kbd.isPressed( 'left' ) || ms.shift < 0) {
+	    } else if (kbd.isPressed( 'left' ) || ms.shift < 0) {
 	        if ( this.left > 0 ) {
-	            ( this.left < step ) ? move = this.left : move = step;
+	            ( this.left < step ) ? move = -this.left : move = -step;
 				
-				if (Math.abs(ms.shift) < move && ms.shift < 0)
-					move = Math.abs(ms.shift);
+				if (ms.shift > move && ms.shift < 0)
+					move = ms.shift;
 
 				this.speed.x = move / App.cycleDuration;
-	            this.left -= move;
+	            this.left += move;
 				ms.setShift();
 	        }
         }
 		this.set(this.left);
+		App.say(this.speed.x)
 	}
-	this.speed.x = move;
 	this.set = function(x){ 
 		racket.style.left = x + 'px';
 		this.left = x;
-		//App.say(x);
 	}
 }
-
 function Brick(id, type){
 	var layer = document.getElementById("bricks-layer");
     var brickCell = document.createElement("div");
@@ -107,7 +102,8 @@ function Brick(id, type){
     var brick = document.createElement("p");
     brickCell.appendChild(brick);
     layer.appendChild(brickCell);
-    this.hitted = false;
+    this.hitted = false; 
+	// ^!!!!!^
 	this.contains = function(x, y){
 		return (x > brickCell.offsetLeft &&
 		 (x < brickCell.offsetLeft + brickCell.offsetWidth) &&
@@ -119,7 +115,8 @@ function Brick(id, type){
 			this.hitted = true;
 			playSound("brick-low.wav", 0);
 			document.getElementById(this.id).innerHTML = "";
-			document.getElementById(this.id).id = "";
+			document.getElementById(this.id).removeAttribute("id")
+			//document.getElementById(this.id).id = "";
 			switch (type) {
 				case "p3":
 					App.state.points += 3
@@ -134,11 +131,7 @@ function Brick(id, type){
 			return true;
 		} else return false;
 	}
-	brick.onclick = function(){
-		bricks[this.parentNode.id].hit();
-	}
 }
-
 Bricks = {
 	getId : function(ix,iy){
 		for (i=0; i<bricks.length; i++){
@@ -146,7 +139,6 @@ Bricks = {
 		}
 	},
 }
-
 function Display(){
 	this.countdown = function(){
 		var shots = ["3", "2", "1", "GO", ""];
@@ -200,24 +192,12 @@ function Ball()
 		ball.y = y;
 		ball.element.style.left = x + 'px';
 		ball.element.style.top = y + 'px';
-		App.say('ball x: ' + ball.element.style.left + '; y: ' + ball.element.style.top);
+		//App.say('ball x: ' + ball.element.style.left + '; y: ' + ball.element.style.top);
 	}
-
 }
-
 function Stack(){
 	this.counter = 0;
-	this.items = [
-			/*
-			 * test values 
-			{x: 30, y: 50, position: 'horizontal', r: 90},
-			{x: 10, y: 60, position: 'horizontal', r: 35},
-			{x: 20, y: 20, position: 'vertical',   r: 43},
-			{x: 33, y: 10, position: 'vertical',   r: 48},
-			{x: 50, y: 10, position: 'horizontal', r: 13},
-			{x: 15, y: 40, position: 'horizontal', r: 54},
-			*/
-		];
+	this.items = [];
 	this.add = function(item){
 		this.items.push(item);
 		this.counter ++;
@@ -235,7 +215,6 @@ function Stack(){
 		return this.items[index];
 	}
 }
-
 function playSound(file, timeout){
 	var player = document.getElementById("player");
 	player.src = "sounds/"+file;
@@ -243,4 +222,14 @@ function playSound(file, timeout){
 		setTimeout(function(){
 			player.play()	
 		}, timeout);
+}
+function Player(){
+	this.sounds = {}
+	this.add = function(id, snd){
+		this.sound[id] = snd;
+		audio = document.createElement('audio');
+		audio.id = id;
+		audio.setAttribute('preload', 'auto');
+		audio.setAttribute('src', 'sounds/' + snd.source);
+	}
 }

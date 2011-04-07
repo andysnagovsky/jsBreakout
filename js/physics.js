@@ -1,4 +1,3 @@
-
 function solve(x1, y1, x2, y2, bx, by, dx, dy)
 {
 	A1 = y1 - y2; B1 = x2 - x1; C1 = x1*y2 - x2*y1;
@@ -11,7 +10,6 @@ function solve(x1, y1, x2, y2, bx, by, dx, dy)
 	y = Math.round(det2/det);
 	return [x,y]
 }
-
 function randomAngle(){
 	var min = Math.PI / 4;
 	var max = Math.PI / 2.5;
@@ -19,17 +17,14 @@ function randomAngle(){
 	var sign = Math.round(Math.random()-1)*2+1;
 	return sign*rndabs
 }
-
 function getSpeedProjections(speed, angle){
-	var x = Math.round(speed * Math.cos(angle));
-	var y = Math.round(speed * Math.sin(angle));
+	var x = Math.round(speed * Math.sin(angle));
+	var y = Math.round(speed * Math.cos(angle));
 	return [x, y]
 }
-
-function addAngle(speedx, speedy, angle){
-	return getSpeedProjections(ball.v, Math.atan(speedy / speedx) + angle);
+function getAngle(speedx, speedy){
+	return Math.atan(speedx / speedy)
 }
-
 function intersects(x1, y1, x2, y2, bx, by, dx, dy)
 {
 	ans = solve(x1, y1, x2, y2, bx, by, dx, dy)
@@ -42,7 +37,6 @@ function intersects(x1, y1, x2, y2, bx, by, dx, dy)
 		return false
 	}
 }
-
 function sgn(a)
 {
 	a>0 ? a=1 : ( a<0 ? a=-1 : a=0 );
@@ -54,13 +48,11 @@ function mirror(x1, y1, x2, y2, xx, xy, dx, dy)
 	var ddy = dy - 2*(dy - xy)*sgn(x2 - x1)
 	return [ddx, ddy]
 }
-
 function solveball(l1, l2, bx, by, dx, dy)
 {
 	ans = solveballcoord(l1[0], l1[1], l2[0], l2[1], bx, by, dx, dy)
 	return ans
 }
-
 function solveballcoord(x1, y1, x2, y2, bx, by, dx, dy)
 {
 	var x = solve(x1, y1, x2, y2, bx, by, dx, dy);
@@ -71,7 +63,6 @@ function solveballcoord(x1, y1, x2, y2, bx, by, dx, dy)
 	var dd = mirror(x1, y1, x2, y2, x[0], x[1], dx, dy);
 	return [x[0], x[1], dd[0], dd[1]]
 }
-
 physics = {
 	step: function()
 	{
@@ -111,7 +102,7 @@ physics = {
 		}
 
 		if ( (ball.py <= 0) && (ball.speed.y < 0) ){
-			App.say("py < 0");
+			//App.say("py < 0");
 			ball.ppy = 0
 			ball.speed.y = -ball.speed.y
 			playSound("wall.wav", App.cycleDuration);
@@ -143,10 +134,8 @@ physics = {
 		ball.element.style.top = ball.y + 'px';
 //		App.say("px=" + ball.px + " py=" + ball.py + "\n ==== end ====");
 	},
-
 	reflect : function () {
 		//Reflection from pad
-			
 		var h = field.height-ball.height-pad.height;
 		//we predict that pad will be here
 		var padxx = Math.round(pad.left + pad.speed.x*(h-ball.y)/(ball.py-ball.y) );
@@ -159,11 +148,13 @@ physics = {
 			)	
 		{
 			ball.ppy = h+5
-			var newspeed = addAngle(ball.speed.x, ball.speed.y, -Math.PI / 2);
-			ball.speed.x = newspeed[0];
-			ball.speed.y = newspeed[1];
-			//ball.speed.y = -ball.speed.y;
-			App.say(newspeed + ' ' + ball.speed.x + ' ' + ball.speed.y);
+			//App.say( ball.speed.x + ' ' + ball.speed.y);
+			ball.speed.y = -ball.speed.y;
+			ball.speed.x += pad.speed.x * 100; //TEMP
+			var newspeed = getSpeedProjections (ball.v, getAngle(ball.speed.x, ball.speed.y));
+			ball.speed.x = -newspeed[0];
+			ball.speed.y = -newspeed[1];
+			App.say( ball.speed.x + ' ' + ball.speed.y);
 			playSound("wall.wav", App.cycleDuration);
 		}
 		else
@@ -231,8 +222,8 @@ physics = {
 		ans = this.stack.min(0);
 		if ( typeof(ans) != "undefined" ){
 			hitId = Bricks.getId(Math.round(ans.x)+1,Math.round(ans.y)-1);
-			App.say(stack.items);
-			App.say(ans.x + " " + ans.y + " " + ans.r + " hitId " + hitId + " stack.counter=" + stack.counter);
+			//App.say(stack.items);
+			//App.say(ans.x + " " + ans.y + " " + ans.r + " hitId " + hitId + " stack.counter=" + stack.counter);
 		}
 //		App.stop();
 //		App.say("hitId="+hitId);
@@ -246,7 +237,7 @@ physics = {
 				)
 		   	  )
 		{
-			App.say(tries + " try");
+			//App.say(tries + " try");
 			tries++;
 			ans = stack.min(tries);
 			if ( ans.r > Math.sqrt(Math.pow(ball.speed.x,2) + Math.pow(ball.speed.y,2)) )
@@ -258,16 +249,16 @@ physics = {
 //			App.say("id=\"" + bricks[hitId].hitted + '\" hitId=' + hitId);
 			bricks[hitId].hit();
 //			App.say("id=\"" + bricks[hitId].hitted + '\" hitId=' + hitId);
-			App.say("==============");
+			//App.say("==============");
 			if (ans.position == "vertical") 
 			{
-				App.say("vertical")
+				//App.say("vertical")
 				ball.speed.x = -ball.speed.x;
 				ball.ppx = ans.x;
 			}
 			if (ans.position == "horizontal") 
 			{
-				App.say("horizontal")
+				//App.say("horizontal")
 				ball.speed.y = -ball.speed.y;
 				ball.ppy = ans.y;
 			}

@@ -11,19 +11,7 @@
 	<script type="text/javascript" src="js/physics.js"></script>
 	<!--	Main script-->
 	<script type="text/javascript" src="js/main.js"></script>
-	<script type="text/javascript">
-	function AppLoop(){
-		if (App.running) {App.update();}
-		setTimeout(AppLoop, App.cycleDuration);
-	}
-	$(document).on('ready', function() {
-		App.load();
-		App.reset();
-		AppLoop();
-	});
-	</script>
 </head>
-
 <body>
 	<div id="wrapper">
 	    <div id="field">

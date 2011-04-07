@@ -7,39 +7,32 @@ App = {
 	{
 		if(this.debugMode) {console.log(info);} ;
 	},
-	
 	// this function is executed at startup
 	load : function()
 	{
 		kbd = new Keyboard();
 		ms = new Mouse();
-		
 		field = new Field();
 		pad = new Pad();
 		display = new Display();
 		ball = new Ball();
-		
 		field.fill();
-		
 		App.start();
 		if (!App.debugMode) display.countdown();
-
 		points = document.getElementById("points");
 		lives = document.getElementById("lives");
-		
 		App.state.lives = 5;
 		App.state.points = 0;
-		
 		document.addEventListener( 'keydown', function(event){
 			ms.shift = 0;
             kbd.setPressed(kbd.key[event.which]);
-			document.getElementById("arrow-" + kbd.key[event.which]).className = "pressed";
+			if (kbd.key[event.which]) document.getElementById("arrow-" + kbd.key[event.which]).className = "pressed";
 		},false);
 		
 		document.addEventListener( 'keyup', function(event){
 			ms.shift = 0;
 			kbd.setReleased(kbd.key[event.which]);
-			document.getElementById("arrow-" + kbd.key[event.which]).className = "";
+			if (kbd.key[event.which]) document.getElementById("arrow-" + kbd.key[event.which]).className = "";
 		},false);
 		
 		document.addEventListener( 'mousemove', function(event){
@@ -57,7 +50,6 @@ App = {
 				App.state.lives === 0
 			) App.load();
 		}, false);
-
 		/*For the buttons on the screen*/
 		document.getElementById("arrow-left").onmousedown = function(){
 			kbd.setPressed('left');
@@ -71,12 +63,7 @@ App = {
 		document.getElementById("arrow-right").onmouseup = function(){
 			kbd.setReleased('right');
 		}
-		
-		/* test
-		App.say(addAngle(ball.speed.x, ball.speed.y, Math.PI / 2));
-		*/
 	},
-
 	// main game cycle
 	update : function()
 	{
@@ -86,7 +73,6 @@ App = {
 			App.stop();
 			points.innerHTML = App.state.points;
 			display.message("Win win win!", false);
-			
 //			App.state.lives = 5;
 //			App.state.points = 0;
 			return;
@@ -129,4 +115,15 @@ App = {
 		App.running = false;
 		display.message("You've lost.<br>Click or press Enter to play again.", false);
 	}
-};
+}
+function AppLoop(){
+    if (App.running) {
+        App.update();
+    }
+    setTimeout(AppLoop, App.cycleDuration);
+}
+window.onload = function(){
+    App.load();
+    App.reset();
+    AppLoop();
+}
