@@ -82,8 +82,6 @@ function solveballcoord(x1, y1, x2, y2, bx, by, dx, dy)
 
 
 
-
-
 physics = {
 	step: function()
 	{
@@ -112,7 +110,7 @@ physics = {
 				var py = by + ball.speed.y;
 				intersection = solve(
 					walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y,
-					ball.x, ball.y, ball.px, ball.py
+					bx, by, px, py
 				);
 				var radius = Math.sqrt( 
 					Math.pow(intersection[0]-bx,2) + 
@@ -122,20 +120,25 @@ physics = {
 				if( 
 					lineIntersectsRay(
 					walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y, 
-					ball.x, ball.y, ball.px, ball.py)
+					bx, by, px, py)
 				  )
 				{
 					App.say("\tray" + j +"  " + intersection + "\t" + radius)
 //					App.say("\tintersects")
 //					App.say(intersection[0] - bx + " " + intersection[1] - by)
-					stack.add({x: intersection[0] , y: intersection[1], r: radius });
+					stack.add(
+						{
+						x: intersection[0] , y: intersection[1], r: radius, 
+						dx: intersection[0] - bx, dy: intersection[1] - by
+						}
+					);
 				}
 			}
 		}
 		ans = {x:16,y:16}
 		ans = stack.min(0);
 		App.say("ans is " + ans.x + " " + ans.y)
-		ball.set(ans.x, ans.y)
+		ball.set(ball.x + ans.dx, ball.y + ans.dy)
 		ball.px = ball.x + ball.speed.x;
 		ball.py = ball.y + ball.speed.y;
 
@@ -167,7 +170,7 @@ physics = {
 		}
 
 		//FIXME for debug purposes only
-		if ( (ball.py > field.height) && (ball.speed.y > 0) ) {
+		if ( (ball.py > field.height-ball.height) && (ball.speed.y > 0) ) {
 			App.say("py > height");
 //			ball.ppx = field.width-ball.width
 			ball.speed.y = -ball.speed.y;

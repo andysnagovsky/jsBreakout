@@ -25,8 +25,8 @@ App = {
 			[{x: 0, y: 0}, {x: field.width, y:0}], 
 //			[{x: field.width, y:0}, {x: field.width, y: field.height}],
 			//FIXME for debug purposes only
-			[{x: field.width-10, y:0}, {x: field.width-10, y: field.height}], 
-			[ {x: 0, y: field.height-10}, {x: field.width-10, y:field.height}], 
+			[{x: field.width, y:0}, {x: field.width, y: field.height}], 
+			[ {x: 0, y: field.height}, {x: field.width, y:field.height}], 
 		];
 		ball.sides = [ 
 			{x: Math.round(ball.width/2), y: 0}, 
