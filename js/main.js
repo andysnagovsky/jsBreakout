@@ -19,6 +19,22 @@ App = {
 		field.fill();
 		App.reset();
 		App.start();
+
+		walls = [ 
+			[{x: 0, y:field.height}, {x: 0, y: 0}], 
+			[{x: 0, y: 0}, {x: field.width, y:0}], 
+//			[{x: field.width, y:0}, {x: field.width, y: field.height}],
+			//FIXME for debug purposes only
+			[{x: field.width-10, y:0}, {x: field.width-10, y: field.height}], 
+			[ {x: 0, y: field.height-10}, {x: field.width-10, y:field.height}], 
+		];
+		ball.sides = [ 
+			{x: Math.round(ball.width/2), y: 0}, 
+			{x: ball.width, y: Math.round(ball.height/2)}, 
+			{x: Math.round(ball.width/2) , y: ball.height}, 
+			{x: 0, y:Math.round(ball.height/2)} 
+		];
+		
 		if (!App.debugMode) display.countdown();
 		points = document.getElementById("points");
 		lives = document.getElementById("lives");
@@ -130,7 +146,7 @@ $(document).on('ready', function() {
 	App.load();
 	App.reset();
 	//debug
-	physics.step();
+//	physics.step();
 	$('display').on('click', physics.step)
 //	AppLoop();
 });

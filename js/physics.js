@@ -29,7 +29,7 @@ function intersects(x1, y1, x2, y2, bx, by, dx, dy)
 {
 	var ans = solve(x1, y1, x2, y2, bx, by, dx, dy)
 	if  (	( (ans[0] >= x1) && (ans[0] <= x2) ) 
-			&&
+			||
 			( (ans[1] >= y1) && (ans[1] <= y2) ) 
 		){
 		return true
@@ -43,7 +43,8 @@ function lineIntersectsRay(x1, y1, x2, y2, bx, by, px, py)
 	var ans = solve(x1, y1, x2, y2, bx, by, px, py)
 	if  (	
 		( sgn(px - bx) == sgn(ans[0] - bx) ) &&
-		( sgn(py - by) == sgn(ans[1] - by) )
+		( sgn(py - by) == sgn(ans[1] - by) ) &&
+		intersects(x1, y1, x2, y2, bx, by, ans[0], ans[1])
 		)
 	{
 		return true
@@ -78,53 +79,60 @@ function solveballcoord(x1, y1, x2, y2, bx, by, dx, dy)
 	var dd = mirror(x1, y1, x2, y2, x[0], x[1], dx, dy);
 	return [x[0], x[1], dd[0], dd[1]]
 }
+
+
+
+
+
 physics = {
 	step: function()
 	{
 		//Death Rays
-		walls = [ 
-			[{x: 0, y:field.height}, {x: 0, y: 0}], 
-			[{x: 0, y: 0}, {x: field.width, y:0}], 
-			[{x: field.width, y:0}, {x: field.width, y: field.height}] 
-		];
-		ball.sides = [ 
-			{x: Math.round(ball.width/2), y: 0}, 
-			{x: ball.width, y: Math.round(ball.height/2)}, 
-			{x: Math.round(ball.width/2) , y: ball.height}, 
-			{x: 0, y:Math.round(ball.height/2)} 
-		];
 		
 		App.say("====\ncalculating")
+		ball.px = ball.x + ball.speed.x;
+		ball.py = ball.y + ball.speed.y;
+		App.say(
+				"ball pos("+ ball.x + ", " + ball.y + "); " + 
+				" speed(" + ball.speed.x + ", " + ball.speed.y + "); " + 
+				" predict(" + ball.px + ", " + ball.py
+				)
 		stack = new Stack();
-		for (var i = 0; i <3; i++)
+		for (var i = 0; i <4; i++)
 		{
-			App.say("line " + i)
+			App.say("line " + i + "\t\t" + 
+				walls[i][0].x + " " + walls[i][0].y + " " + 
+				walls[i][1].x + " " + walls[i][1].y)
 			for (var j = 0; j < 4; j++)
 			{
-				App.say("\tray" + j)
+//				App.say("\tray" + j)
 				var bx = ball.x + ball.sides[j].x;
 				var by = ball.y + ball.sides[j].y;
 				var px = bx + ball.speed.x;
 				var py = by + ball.speed.y;
-				if( lineIntersectsRay(
-					bx, by, px, py, 
-					walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y
-				) )
+				intersection = solve(
+					walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y,
+					ball.x, ball.y, ball.px, ball.py
+				);
+				var radius = Math.sqrt( 
+					Math.pow(intersection[0]-bx,2) + 
+					Math.pow(intersection[1]-by,2) 
+				)
+				
+				if( 
+					lineIntersectsRay(
+					walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y, 
+					ball.x, ball.y, ball.px, ball.py)
+				  )
 				{
-					intersection = solve(
-						bx, by, px, py, 
-						walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y
-					);
+					App.say("\tray" + j +"  " + intersection + "\t" + radius)
+//					App.say("\tintersects")
 //					App.say(intersection[0] - bx + " " + intersection[1] - by)
-					var radius = Math.sqrt( 
-						Math.pow(intersection[0]-bx,2) + 
-						Math.pow(intersection[1]-by,2) 
-					)
-					stack.add({x: intersection[0] , y: intersection[1], position: 'vertical', r: radius });
-					App.say("\t" + intersection + " " + radius)
+					stack.add({x: intersection[0] , y: intersection[1], r: radius });
 				}
 			}
 		}
+		ans = {x:16,y:16}
 		ans = stack.min(0);
 		App.say("ans is " + ans.x + " " + ans.y)
 		ball.set(ans.x, ans.y)
@@ -145,18 +153,26 @@ physics = {
 		}
 		
 		if ( (ball.px <= 0) && (ball.speed.x < 0) ){
-//			App.say("px < 0");
-			ball.ppx = 0
+			App.say("px < 0");
+//			ball.ppx = 0
 			ball.speed.x = -ball.speed.x
 			playSound("wall.wav", App.cycleDuration);
 		}
 
-//		if ( (ball.px > field.width-ball.width) && (ball.speed.x > 0) ) {
-////			App.say("px > width");
+		if ( (ball.px > field.width-ball.width) && (ball.speed.x > 0) ) {
+			App.say("px > width");
 //			ball.ppx = field.width-ball.width
-//			ball.speed.x = -ball.speed.x
-//			playSound("wall.wav", App.cycleDuration);
-//		}
+			ball.speed.x = -ball.speed.x
+			playSound("wall.wav", App.cycleDuration);
+		}
+
+		//FIXME for debug purposes only
+		if ( (ball.py > field.height) && (ball.speed.y > 0) ) {
+			App.say("py > height");
+//			ball.ppx = field.width-ball.width
+			ball.speed.y = -ball.speed.y;
+			playSound("wall.wav", App.cycleDuration);
+		}
 
 //		if ( (ball.py > field.height-ball.height-pad.height) && (ball.speed.y > 0) ) {
 ////			App.say("py > height");

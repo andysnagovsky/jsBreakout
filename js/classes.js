@@ -177,7 +177,9 @@ function Ball()
 	var initangle = randomAngle();
 	this.speed = {
 		x : getSpeedProjections(this.v, initangle)[0],
-		y : getSpeedProjections(this.v, initangle)[1]
+		y : -getSpeedProjections(this.v, initangle)[1]
+//		x: -10,
+//		y: -20,
 	};
 	App.say(this.speed.x + ' ' + this.speed.y);
 	this.element = document.getElementById("ball");
