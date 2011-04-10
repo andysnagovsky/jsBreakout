@@ -1,7 +1,7 @@
-@import "http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"; 
-*{
-	margin: 0px;
-	padding: 0px;
+/*@import "http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic"; */
+* {
+    margin: 0px;
+    padding: 0px;
 }
 @font-face{
 	font-family: 'League Gothic'; src: url('../img/League-Gothic.otf');
@@ -43,6 +43,14 @@ body{
 	z-index: 2;
 	display: table;
 }
+#deathrays{
+	border-radius: 3px;
+	height: inherit;
+	width: inherit;
+	position: absolute;
+	top: 25px;
+	z-index: 2;
+}
 #message{
 	font: 36pt / 1 "League Gothic", sans-serif;
 	color: #ddd;
@@ -70,6 +78,7 @@ body{
 	z-index: 1;
 	overflow: hidden;
 	border-radius: 3px;
+	display:none;
 }
 .brick{
 	width:60px;
