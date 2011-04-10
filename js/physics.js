@@ -148,21 +148,21 @@ physics = {
 				" predict(" + ball.px + ", " + ball.py
 				)
 		
-		if ( (ball.py <= 0) && (ball.speed.y < 0) ){
+		if ( (ball.y <= 0) && (ball.speed.y < 0) ){
 			App.say("py < 0");
 //			ball.ppy = 0
 			ball.speed.y = -ball.speed.y
 			playSound("wall.wav", App.cycleDuration);
 		}
 		
-		if ( (ball.px <= 0) && (ball.speed.x < 0) ){
+		if ( (ball.x <= 0) && (ball.speed.x < 0) ){
 			App.say("px < 0");
 //			ball.ppx = 0
 			ball.speed.x = -ball.speed.x
 			playSound("wall.wav", App.cycleDuration);
 		}
 
-		if ( (ball.px > field.width-ball.width) && (ball.speed.x > 0) ) {
+		if ( (ball.x >= field.width-ball.width) && (ball.speed.x > 0) ) {
 			App.say("px > width");
 //			ball.ppx = field.width-ball.width
 			ball.speed.x = -ball.speed.x
