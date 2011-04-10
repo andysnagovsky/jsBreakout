@@ -132,3 +132,17 @@ App = {
 		display.message("You've lost.<br>Click or press Enter to play again.", false);
 	}
 };
+
+
+//function AppLoop(){
+//	if (App.running) {App.update();}
+//	setTimeout(AppLoop, App.cycleDuration);
+//}
+$(document).on('ready', function() {
+	App.load();
+	App.reset();
+	//debug
+	physics.step();
+	$('display').on('click', physics.step)
+//	AppLoop();
+});

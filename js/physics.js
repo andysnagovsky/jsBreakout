@@ -32,11 +32,25 @@ function addAngle(speedx, speedy, angle){
 
 function intersects(x1, y1, x2, y2, bx, by, dx, dy)
 {
-	ans = solve(x1, y1, x2, y2, bx, by, dx, dy)
+	var ans = solve(x1, y1, x2, y2, bx, by, dx, dy)
 	if  (	( (ans[0] >= x1) && (ans[0] <= x2) ) 
 			&&
 			( (ans[1] >= y1) && (ans[1] <= y2) ) 
 		){
+		return true
+	}else{
+		return false
+	}
+}
+
+function lineIntersectsRay(x1, y1, x2, y2, bx, by, px, py)
+{
+	var ans = solve(x1, y1, x2, y2, bx, by, px, py)
+	if  (	
+		( sgn(px - bx) == sgn(ans[0] - bx) ) &&
+		( sgn(py - by) == sgn(ans[1] - by) )
+		)
+	{
 		return true
 	}else{
 		return false
@@ -75,202 +89,293 @@ function solveballcoord(x1, y1, x2, y2, bx, by, dx, dy)
 physics = {
 	step: function()
 	{
-		//Reflection from walls
+		//Death Rays
+		walls = [ 
+			[{x: 0, y:field.height}, {x: 0, y: 0}], 
+			[{x: 0, y: 0}, {x: field.width, y:0}], 
+			[{x: field.width, y:0}, {x: field.width, y: field.height}] 
+		];
+		ball.sides = [ 
+			{x: Math.round(ball.width/2), y: 0}, 
+			{x: ball.width, y: Math.round(ball.height/2)}, 
+			{x: Math.round(ball.width/2) , y: ball.height}, 
+			{x: 0, y:Math.round(ball.height/2)} 
+		];
 		
-		ball.ppx = ball.px = ball.x + ball.speed.x;
-		ball.ppy = ball.py = ball.y + ball.speed.y;
-//		App.say("==== start ==== \n" + "bx=" + ball.x + " by=" + ball.y)
-		if ( (ball.py < 66) )//|| (ball.y < 66) )
+		App.say("====\ncalculating")
+		stack = new Stack();
+		for (var i = 0; i <3; i++)
 		{
-//			App.say("brickTime");
-			var bx = ball.x
-			var by = ball.y
-			var px = ball.px
-			var py = ball.py
-//			if (ball.speed.y < 0){
-//				if (ball.speed.x > 0)
-//				{
-//					var bx = ball.x + ball.width;
-//					var px = ball.px + ball.width;
-//				}
-////				bx = ball.x + ball.width/2;
-//			} 
-//			else {
-//				by = ball.y + ball.height;
-//				if (ball.speed.x > 0)
-//				{
-//					var bx = ball.x + ball.width;
-//					var px = ball.px + ball.width;
-////					var py = ball.y + ball.height;
-//				}
-//			}
-			
-			brickTime(bx, by, px, py);			
-//			ball.ppx = 0
-//			ball.speed.x = -ball.speed.x
+			App.say("line " + i)
+			for (var j = 0; j < 4; j++)
+			{
+				App.say("\tray" + j)
+				var bx = ball.x + ball.sides[j].x;
+				var by = ball.y + ball.sides[j].y;
+				var px = bx + ball.speed.x;
+				var py = by + ball.speed.y;
+				if( lineIntersectsRay(
+					bx, by, px, py, 
+					walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y
+				) )
+				{
+					intersection = solve(
+						bx, by, px, py, 
+						walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y
+					);
+//					App.say(intersection[0] - bx + " " + intersection[1] - by)
+					var radius = Math.sqrt( 
+						Math.pow(intersection[0]-bx,2) + 
+						Math.pow(intersection[1]-by,2) 
+					)
+					stack.add({x: intersection[0] , y: intersection[1], position: 'vertical', r: radius });
+					App.say("\t" + intersection + " " + radius)
+				}
+			}
 		}
+		ans = stack.min(0);
+		App.say("ans is " + ans.x + " " + ans.y)
+		ball.set(ans.x, ans.y)
+		ball.px = ball.x + ball.speed.x;
+		ball.py = ball.y + ball.speed.y;
 
+		App.say(
+				"ball pos("+ ball.x + ", " + ball.y + "); " + 
+				" speed(" + ball.speed.x + ", " + ball.speed.y + "); " + 
+				" predict(" + ball.px + ", " + ball.py
+				)
+		
 		if ( (ball.py <= 0) && (ball.speed.y < 0) ){
 			App.say("py < 0");
-			ball.ppy = 0
+//			ball.ppy = 0
 			ball.speed.y = -ball.speed.y
 			playSound("wall.wav", App.cycleDuration);
 		}
 		
-		if ( (ball.px < 0) && (ball.speed.x < 0) ){
+		if ( (ball.px <= 0) && (ball.speed.x < 0) ){
 //			App.say("px < 0");
 			ball.ppx = 0
 			ball.speed.x = -ball.speed.x
 			playSound("wall.wav", App.cycleDuration);
 		}
 
-		if ( (ball.px > field.width-ball.width) && (ball.speed.x > 0) ) {
-//			App.say("px > width");
-			ball.ppx = field.width-ball.width
-			ball.speed.x = -ball.speed.x
-			playSound("wall.wav", App.cycleDuration);
-		}
+//		if ( (ball.px > field.width-ball.width) && (ball.speed.x > 0) ) {
+////			App.say("px > width");
+//			ball.ppx = field.width-ball.width
+//			ball.speed.x = -ball.speed.x
+//			playSound("wall.wav", App.cycleDuration);
+//		}
 
-		if ( (ball.py > field.height-ball.height-pad.height) && (ball.speed.y > 0) ) {
-//			App.say("py > height");
-			this.reflect();
-			
-		}
+//		if ( (ball.py > field.height-ball.height-pad.height) && (ball.speed.y > 0) ) {
+////			App.say("py > height");
+//			this.reflect();
+//			
+//		}
 
-		ball.x = ball.ppx
-		ball.y = ball.ppy
-//		ball.x = ball.px
-//		ball.y = ball.py
-		ball.element.style.left = ball.x + 'px';
-		ball.element.style.top = ball.y + 'px';
-//		App.say("px=" + ball.px + " py=" + ball.py + "\n ==== end ====");
-	},
 
-	reflect : function () {
-		//Reflection from pad
-			
-		var h = field.height-ball.height-pad.height;
-		//we predict that pad will be here
-		var padxx = Math.round(pad.left + pad.speed.x*(h-ball.y)/(ball.py-ball.y) );
-		var bw = ball.x + ball.width;
-//		App.say("pad.x=" + pad.left + "\npad.speed=" + pad.speed.x);
-//		App.say("padxx=" + padxx + "\nball.x=" + ball.x);
-		if  (	( (ball.x > padxx) && (ball.x < padxx + pad.width) ) 
-				||
-				( (bw > padxx) && (bw < padxx + pad.width) ) 
-			)	
-		{
-			ball.ppy = h+5
-			var newspeed = addAngle(ball.speed.x, ball.speed.y, -Math.PI / 2);
-			ball.speed.x = newspeed[0];
-			ball.speed.y = newspeed[1];
-			//ball.speed.y = -ball.speed.y;
-			App.say(newspeed + ' ' + ball.speed.x + ' ' + ball.speed.y);
-			playSound("wall.wav", App.cycleDuration);
-		}
-		else
-		{
-//			App.say("You loose.")
-			App.state.lives --;
-			lives.innerHTML = App.state.lives;
-			
-			App.stop();
-			display.message('&nbsp;', false);
-			setTimeout(App.restart, 1000);
-		}
-	},
-	
+		
+	}	
 }
 
-	//All in all, it's just another brick in the wall
-	brickTime = function(bx, by, px, py)
-	{
-//		App.say("args: "+bx+" "+by+" "+px+" "+py)
-//		if (ball.speed.y < 0){
-//			if (ball.speed.x > 0)
+//physics = {
+//	step: function()
+//	{
+//		//Reflection from walls
+//		
+//		ball.ppx = ball.px = ball.x + ball.speed.x;
+//		ball.ppy = ball.py = ball.y + ball.speed.y;
+////		App.say("==== start ==== \n" + "bx=" + ball.x + " by=" + ball.y)
+//		if ( (ball.py < 66) )//|| (ball.y < 66) )
+//		{
+////			App.say("brickTime");
+//			var bx = ball.x
+//			var by = ball.y
+//			var px = ball.px
+//			var py = ball.py
+////			if (ball.speed.y < 0){
+////				if (ball.speed.x > 0)
+////				{
+////					var bx = ball.x + ball.width;
+////					var px = ball.px + ball.width;
+////				}
+//////				bx = ball.x + ball.width/2;
+////			} 
+////			else {
+////				by = ball.y + ball.height;
+////				if (ball.speed.x > 0)
+////				{
+////					var bx = ball.x + ball.width;
+////					var px = ball.px + ball.width;
+//////					var py = ball.y + ball.height;
+////				}
+////			}
+//			
+//			brickTime(bx, by, px, py);			
+////			ball.ppx = 0
+////			ball.speed.x = -ball.speed.x
+//		}
+
+//		if ( (ball.py <= 0) && (ball.speed.y < 0) ){
+//			App.say("py < 0");
+//			ball.ppy = 0
+//			ball.speed.y = -ball.speed.y
+//			playSound("wall.wav", App.cycleDuration);
+//		}
+//		
+//		if ( (ball.px < 0) && (ball.speed.x < 0) ){
+////			App.say("px < 0");
+//			ball.ppx = 0
+//			ball.speed.x = -ball.speed.x
+//			playSound("wall.wav", App.cycleDuration);
+//		}
+
+//		if ( (ball.px > field.width-ball.width) && (ball.speed.x > 0) ) {
+////			App.say("px > width");
+//			ball.ppx = field.width-ball.width
+//			ball.speed.x = -ball.speed.x
+//			playSound("wall.wav", App.cycleDuration);
+//		}
+
+//		if ( (ball.py > field.height-ball.height-pad.height) && (ball.speed.y > 0) ) {
+////			App.say("py > height");
+//			this.reflect();
+//			
+//		}
+
+//		ball.x = ball.ppx
+//		ball.y = ball.ppy
+////		ball.x = ball.px
+////		ball.y = ball.py
+//		ball.element.style.left = ball.x + 'px';
+//		ball.element.style.top = ball.y + 'px';
+////		App.say("px=" + ball.px + " py=" + ball.py + "\n ==== end ====");
+//	},
+
+//	reflect : function () {
+//		//Reflection from pad
+//			
+//		var h = field.height-ball.height-pad.height;
+//		//we predict that pad will be here
+//		var padxx = Math.round(pad.left + pad.speed.x*(h-ball.y)/(ball.py-ball.y) );
+//		var bw = ball.x + ball.width;
+////		App.say("pad.x=" + pad.left + "\npad.speed=" + pad.speed.x);
+////		App.say("padxx=" + padxx + "\nball.x=" + ball.x);
+//		if  (	( (ball.x > padxx) && (ball.x < padxx + pad.width) ) 
+//				||
+//				( (bw > padxx) && (bw < padxx + pad.width) ) 
+//			)	
+//		{
+//			ball.ppy = h+5
+//			var newspeed = addAngle(ball.speed.x, ball.speed.y, -Math.PI / 2);
+//			ball.speed.x = newspeed[0];
+//			ball.speed.y = newspeed[1];
+//			//ball.speed.y = -ball.speed.y;
+//			App.say(newspeed + ' ' + ball.speed.x + ' ' + ball.speed.y);
+//			playSound("wall.wav", App.cycleDuration);
+//		}
+//		else
+//		{
+////			App.say("You loose.")
+//			App.state.lives --;
+//			lives.innerHTML = App.state.lives;
+//			
+//			App.stop();
+//			display.message('&nbsp;', false);
+//			setTimeout(App.restart, 1000);
+//		}
+//	},
+//	
+//}
+
+//	//All in all, it's just another brick in the wall
+//	brickTime = function(bx, by, px, py)
+//	{
+////		App.say("args: "+bx+" "+by+" "+px+" "+py)
+////		if (ball.speed.y < 0){
+////			if (ball.speed.x > 0)
+////			{
+////				var bx = ball.x + ball.width;
+////				var px = ball.px + ball.width;
+////			}
+//////				bx = ball.x + ball.width/2;
+////		} else {
+////			by = ball.y + ball.height;
+////			if (ball.speed.x > 0)
+////			{
+////				var bx = ball.x + ball.width;
+////				var px = ball.px + ball.width;
+//////					var py = ball.y + ball.height;
+////			}
+////		}
+//		this.stack = new Stack()
+//		for (i = 1; i <= 3; i++)
+//		{
+//			lx1 = 0; lx2 = field.width;
+//			ly1 = ly2 = i*22;
+//			if (intersects(lx1, ly1, lx2, ly2, bx, by, px, py))
 //			{
-//				var bx = ball.x + ball.width;
-//				var px = ball.px + ball.width;
-//			}
-////				bx = ball.x + ball.width/2;
-//		} else {
-//			by = ball.y + ball.height;
-//			if (ball.speed.x > 0)
-//			{
-//				var bx = ball.x + ball.width;
-//				var px = ball.px + ball.width;
-////					var py = ball.y + ball.height;
+////				App.say("horizontal intersection");
+//				var ans = solve(lx1, ly1, lx2, ly2, bx, by, px, py);
+//				var radius = Math.sqrt( Math.pow(ans[0] - bx, 2) + Math.pow(ans[1] - by, 2) );
+//				this.stack.add({x: ans[0] , y: ans[1], position: 'horizontal', r: radius });
 //			}
 //		}
-		this.stack = new Stack()
-		for (i = 1; i <= 3; i++)
-		{
-			lx1 = 0; lx2 = field.width;
-			ly1 = ly2 = i*22;
-			if (intersects(lx1, ly1, lx2, ly2, bx, by, px, py))
-			{
-//				App.say("horizontal intersection");
-				var ans = solve(lx1, ly1, lx2, ly2, bx, by, px, py);
-				var radius = Math.sqrt( Math.pow(ans[0] - bx, 2) + Math.pow(ans[1] - by, 2) );
-				this.stack.add({x: ans[0] , y: ans[1], position: 'horizontal', r: radius });
-			}
-		}
-		for (i = 1; i <= 9; i++)
-		{
-			ly1 = 0; ly2 = 66;
-			lx1 = lx2 = i*60;
-			if (intersects(lx1, ly1, lx2, ly2, bx, by, px, py))
-			{
-//				App.say("vertical intersection");
-				var ans = solve(lx1, ly1, lx2, ly2, bx, by, px, py);
-				var radius = Math.sqrt( Math.pow(ans[0] - bx, 2) + Math.pow(ans[1] - by, 2) );
-				this.stack.add({x: ans[0] , y: ans[1], position: 'vertical', r: radius });
-			}
-		}
-		ans = this.stack.min(0);
-		if ( typeof(ans) != "undefined" ){
-			hitId = Bricks.getId(Math.round(ans.x)+1,Math.round(ans.y)-1);
-//			App.say(stack.items);
-//			App.say(ans.x + " " + ans.y + " " + ans.r + " hitId " + hitId + " stack.counter=" + stack.counter);
-		}
-//		App.stop();
-//		App.say("hitId="+hitId);
-		
-		tries = 0;
-		while (	
-				(tries < stack.counter-1) &&
-				(
-					( typeof(hitId) == "undefined" ) ||
-					(bricks[hitId].hitted)
-				)
-		   	  )
-		{
-			App.say(tries + " try");
-			tries++;
-			ans = stack.min(tries);
-			if ( ans.r > Math.sqrt(Math.pow(ball.speed.x,2) + Math.pow(ball.speed.y,2)) )
-				break;
-			hitId = Bricks.getId(Math.round(ans.x)+1,Math.round(ans.y)-1);
-		}
-		if ( (!(typeof(hitId)=="undefined")) && (!bricks[hitId].hitted)) 
-		{
-//			App.say("id=\"" + bricks[hitId].hitted + '\" hitId=' + hitId);
-			bricks[hitId].hit();
-//			App.say("id=\"" + bricks[hitId].hitted + '\" hitId=' + hitId);
-//			App.say("==============");
-			if (ans.position == "vertical") 
-			{
-//				App.say("vertical")
-				ball.speed.x = -ball.speed.x;
-				ball.ppx = ans.x;
-			}
-			if (ans.position == "horizontal") 
-			{
-//				App.say("horizontal")
-				ball.speed.y = -ball.speed.y;
-				ball.ppy = ans.y;
-			}
-		}
-	}
+//		for (i = 1; i <= 9; i++)
+//		{
+//			ly1 = 0; ly2 = 66;
+//			lx1 = lx2 = i*60;
+//			if (intersects(lx1, ly1, lx2, ly2, bx, by, px, py))
+//			{
+////				App.say("vertical intersection");
+//				var ans = solve(lx1, ly1, lx2, ly2, bx, by, px, py);
+//				var radius = Math.sqrt( Math.pow(ans[0] - bx, 2) + Math.pow(ans[1] - by, 2) );
+//				this.stack.add({x: ans[0] , y: ans[1], position: 'vertical', r: radius });
+//			}
+//		}
+//		ans = this.stack.min(0);
+//		if ( typeof(ans) != "undefined" ){
+//			hitId = Bricks.getId(Math.round(ans.x)+1,Math.round(ans.y)-1);
+////			App.say(stack.items);
+////			App.say(ans.x + " " + ans.y + " " + ans.r + " hitId " + hitId + " stack.counter=" + stack.counter);
+//		}
+////		App.stop();
+////		App.say("hitId="+hitId);
+//		
+//		tries = 0;
+//		while (	
+//				(tries < stack.counter-1) &&
+//				(
+//					( typeof(hitId) == "undefined" ) ||
+//					(bricks[hitId].hitted)
+//				)
+//		   	  )
+//		{
+//			App.say(tries + " try");
+//			tries++;
+//			ans = stack.min(tries);
+//			if ( ans.r > Math.sqrt(Math.pow(ball.speed.x,2) + Math.pow(ball.speed.y,2)) )
+//				break;
+//			hitId = Bricks.getId(Math.round(ans.x)+1,Math.round(ans.y)-1);
+//		}
+//		if ( (!(typeof(hitId)=="undefined")) && (!bricks[hitId].hitted)) 
+//		{
+////			App.say("id=\"" + bricks[hitId].hitted + '\" hitId=' + hitId);
+//			bricks[hitId].hit();
+////			App.say("id=\"" + bricks[hitId].hitted + '\" hitId=' + hitId);
+////			App.say("==============");
+//			if (ans.position == "vertical") 
+//			{
+////				App.say("vertical")
+//				ball.speed.x = -ball.speed.x;
+//				ball.ppx = ans.x;
+//			}
+//			if (ans.position == "horizontal") 
+//			{
+////				App.say("horizontal")
+//				ball.speed.y = -ball.speed.y;
+//				ball.ppy = ans.y;
+//			}
+//		}
+//	}
 
 
