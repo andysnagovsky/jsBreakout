@@ -35,9 +35,9 @@ function Mouse(){
 }
 function Field(){
 	this.source = document.getElementById("field");
-	this.width = parseFloat(window.getComputedStyle(this.source, null).getPropertyValue("width"));
-	this.height = parseFloat(window.getComputedStyle(this.source, null).getPropertyValue("height"));
-	this.left = parseFloat(window.getComputedStyle(this.source, null).getPropertyValue("left"));
+	this.width = this.source.offsetWidth;
+	this.height = this.source.offsetHeight;
+	this.left = this.source.offsetLeft;
 	this.fill = function(){
 		bricks=[]
 		document.getElementById("bricks-layer").innerHTML = "";
@@ -47,48 +47,51 @@ function Field(){
 	}
 }
 function Pad(){
-	this.speed = { maximum: 300, x: 0}
+	this.speed = { max: 200, x: 0}
+//	this.speed = 1.5; // px per millisecond
 	this.x = 0;
-	var racket = document.getElementById("racket");
-	this.width = parseFloat(window.getComputedStyle(racket, null).getPropertyValue("width"));
-	this.height = parseFloat(window.getComputedStyle(racket, null).getPropertyValue("height"));
-	this.top = parseFloat(window.getComputedStyle(racket, null).getPropertyValue("top"));
+	this.source = document.getElementById("racket")
+	this.width = this.source.offsetWidth;
+	this.height = this.source.offsetHeight;
+	this.top = this.source.offsetTop;
 	this.path = field.width - this.width;
-	var step = this.speed.maximum * App.cycleDuration / 1000;
+	var step = this.speed.max * 0.2;
 	var move = step;
 	this.left = ( this.path - this.width ) / 2;
-	racket.style.left = window.getComputedStyle( racket, null ).getPropertyValue( "left" );
+//	this.source.style.left = this.source.offsetLeft;
 
-	this.move = function(){
-		this.speed.x = 0;
- 		if (kbd.isPressed( 'right' ) || ms.shift > 0 && !kbd.isPressed('left')) {
-	        if ( this.left < this.path ) {
-	            ( ( this.path - this.left ) < step ) ? move = this.path - this.left : move = step;
+	this.move = function()
+	{
+		if (kbd.isPressed('right') || ms.shift > 0 && !kbd.isPressed('left')) 
+		{
+			if (this.left < this.path) 
+			{
+				((this.path - this.left) < step) ? move = this.path - this.left : move = step;
 				
-				if (ms.shift < move && ms.shift > 0)
+				if (ms.shift < move && ms.shift > 0) 
 					move = ms.shift;
 				
-				this.speed.x = move / App.cycleDuration;
-	            this.left += move;
+				this.left += move;
 				ms.setShift();
-	        }
-	    } else if (kbd.isPressed( 'left' ) || ms.shift < 0) {
-	        if ( this.left > 0 ) {
-	            ( this.left < step ) ? move = -this.left : move = -step;
+			}
+		} else if (kbd.isPressed('left') || ms.shift < 0) 
+		{
+			if (this.left > 0) 
+			{
+				(this.left < step) ? move = -this.left : move = -step;
 				
-				if (ms.shift > move && ms.shift < 0)
+				if (ms.shift > move && ms.shift < 0) 
 					move = ms.shift;
-
-				this.speed.x = move / App.cycleDuration;
-	            this.left += move;
+				
+				this.left += move;
 				ms.setShift();
-	        }
-        }
+			}
+		}
 		this.set(this.left);
 		App.say(this.speed.x)
 	}
 	this.set = function(x){ 
-		racket.style.left = x + 'px';
+		this.source.style.left = x + 'px';
 		this.left = x;
 	}
 }
@@ -173,7 +176,7 @@ function Display(){
 }
 function Ball()
 {
-	this.v = 50;
+	this.v = 250;
 	var initangle = randomAngle();
 	this.speed = {
 		x : getSpeedProjections(this.v, initangle)[0],
@@ -183,10 +186,10 @@ function Ball()
 	};
 	App.say(this.speed.x + ' ' + this.speed.y);
 	this.element = document.getElementById("ball");
-	this.left = parseFloat(window.getComputedStyle(this.element, null).getPropertyValue("left"));
-	this.top = parseFloat(window.getComputedStyle(this.element, null).getPropertyValue("top"));
-	this.width = parseFloat(window.getComputedStyle(this.element, null).getPropertyValue("width"));
-	this.height = parseFloat(window.getComputedStyle(this.element, null).getPropertyValue("height"));
+	this.left = this.element.offsetLeft;
+	this.top = this.element.offsetTop;
+	this.width = this.element.offsetWidth;
+	this.height = this.element.offsetHeight;
 	this.x = this.left; this.y = this.top;
 	this.px = this.x; this.py = this.y
 	this.set = function(x,y){
@@ -197,17 +200,23 @@ function Ball()
 		//App.say('ball x: ' + ball.element.style.left + '; y: ' + ball.element.style.top);
 	}
 }
-function Stack(){
+function Stack()
+{
 	this.counter = 0;
 	this.items = [];
-	this.add = function(item){
+	this.add = function(item)
+	{
 		this.items.push(item);
-		this.counter ++;
+		this.counter++;
 	}
-	this.min = function(index){
-		for (k = this.items.length - 1; k > 0; k--) {
-			for (j = 0; j < k; j++) {
-				if (this.items[j].r > this.items[j + 1].r) {
+	this.min = function(index)
+	{
+		for (k = this.items.length - 1; k > 0; k--) 
+		{
+			for (j = 0; j < k; j++) 
+			{
+				if (this.items[j].r > this.items[j + 1].r) 
+				{
 					m = this.items[j];
 					this.items[j] = this.items[j + 1];
 					this.items[j + 1] = m;

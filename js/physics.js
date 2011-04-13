@@ -25,6 +25,11 @@ function getSpeedProjections(speed, angle){
 function getAngle(speedx, speedy){
 	return Math.atan(speedx / speedy)
 }
+function setSpeed (r, speed)
+{
+	var screenSpeed = r / speed;
+	
+}
 function intersects(x1, y1, x2, y2, bx, by, dx, dy)
 {
 	var ans = solve(x1, y1, x2, y2, bx, by, dx, dy)
@@ -106,7 +111,7 @@ physics = {
 //				App.say("\tray" + j)
 				var bx = ball.x + ball.sides[j].x;
 				var by = ball.y + ball.sides[j].y;
-				var px = bx + ball.speed.x;
+				var px = bx + ball.speed.x; // must not be the speed, but some distance definitely larger than the size of the field. sgn(ball.speed.x)*field.width?
 				var py = by + ball.speed.y;
 				intersection = solve(
 					walls[i][0].x, walls[i][0].y, walls[i][1].x, walls[i][1].y,
@@ -138,6 +143,9 @@ physics = {
 		ans = {x:16,y:16}
 		ans = stack.min(0);
 		App.say("ans is " + ans.x + " " + ans.y)
+		App.cycleDuration = ans.r / (ball.v / 1000);
+		App.say('App.cycleDuration: ' + App.cycleDuration + '; r: ' + ans.r + '; ball.v: ' + ball.v/1000);
+		$('ball').setStyle('-webkit-transition-duration', App.cycleDuration + 'ms');
 		ball.set(ball.x + ans.dx, ball.y + ans.dy)
 		ball.px = ball.x + ball.speed.x;
 		ball.py = ball.y + ball.speed.y;
@@ -170,21 +178,26 @@ physics = {
 		}
 
 		//FIXME for debug purposes only
-		if ( (ball.py > field.height-ball.height) && (ball.speed.y > 0) ) {
-			App.say("py > height");
-//			ball.ppx = field.width-ball.width
-			ball.speed.y = -ball.speed.y;
+//		if ( (ball.py > field.height-ball.height) && (ball.speed.y > 0) ) {
+//			App.say("py > height");
+////			ball.ppx = field.width-ball.width
+//			ball.speed.y = -ball.speed.y;
+//			playSound("wall.wav", App.cycleDuration);
+//		}
+		if ( (ball.py > field.height-ball.height-pad.height) && (ball.speed.y > 0) ) {
+//			App.say("py > height");
+			//this.reflect();
+			var newspeed = addAngle(ball.speed.x, ball.speed.y, -Math.PI / 2);
+			ball.speed.x = newspeed[0];
+			ball.speed.y = newspeed[1];
+			//ball.speed.y = -ball.speed.y;
+			App.say(newspeed + ' ' + ball.speed.x + ' ' + ball.speed.y);
 			playSound("wall.wav", App.cycleDuration);
 		}
-
-//		if ( (ball.py > field.height-ball.height-pad.height) && (ball.speed.y > 0) ) {
-////			App.say("py > height");
-//			this.reflect();
-//			
-//		}
-	}	
+		
+	}
 }
-
+/*
 //physics = {
 //	step: function()
 //	{
@@ -385,3 +398,4 @@ physics = {
 //			}
 //		}
 //	}
+*/
