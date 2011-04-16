@@ -1,8 +1,8 @@
 App = {
 	debugMode : true,
-	cycleDuration: 200, //in miliseconds
+//	cycleDuration: 1000, //in miliseconds
 	running: true,
-	sounds: true,
+	sounds: false,
 	say : function(info)
 	{
 		if(this.debugMode) {console.log(info);} ;
@@ -18,6 +18,9 @@ App = {
 		display = new Display();
 		ball = new Ball();
 		field.fill();
+		sound = new Player();
+		sound.add('wall', 'wall.wav');
+		sound.add('brick', 'brick-low.wav');
 		App.reset();
 		App.start();
 
@@ -56,7 +59,6 @@ App = {
 				kbd.key[event.which] === 'right')
 					document.getElementById(kbd.key[event.which]).className = "";
 		},false);
-		
 		document.addEventListener( 'mousemove', function(event){
 			ms.x = ms.convertX(event);
 			ms.setShift();
@@ -83,6 +85,14 @@ App = {
 		document.getElementById("right").onmouseup = function(){
 			kbd.setReleased('right');
 		}
+		document.getElementById("right").ontouchend = function(){
+			kbd.setReleased('right');
+		}
+		document.addEventListener( 'touchmove', function(event)
+		{
+			ms.x = ms.convertX(event);
+			ms.setShift();
+		},false);
 	},
 	// main game cycle
 	update : function()
@@ -93,7 +103,7 @@ App = {
 		if (App.state.points === 150){
 			App.stop();
 			points.innerHTML = App.state.points;
-			display.message("Congratulations!<br>You've won", false);
+			display.message("Congratulations!<br>You've won");
 			return;
 		}
 		if (App.state.lives === 0) {
@@ -118,24 +128,24 @@ App = {
 		App.running = false;
 	},
 	restart : function(){
-		$('ball').setStyle('transition-duration', '0');
-		$('ball').setStyle('-o-transition-duration', '0');
-		$('ball').setStyle('-moz-transition', 'none');
 		$('ball').setStyle('-webkit-transition-duration', '0');
+		$('ball').setStyle('-moz-transition', 'none');
+		$('ball').setStyle('-o-transition-duration', '0');
+		$('ball').setStyle('transition-duration', '0');
 		App.reset();
-		setTimeout(function(){
+/*		setTimeout(function(){
 			App.update();
-			$('ball').setStyle('transition-duration', '.2s');
-			$('ball').setStyle('-o-transition-duration', '.2s');
-			$('ball').setStyle('-moz-transition', 'all .24s linear');
 			$('ball').setStyle('-webkit-transition-duration', '.2s');
+			$('ball').setStyle('-moz-transition', 'all .24s linear');
+			$('ball').setStyle('-o-transition-duration', '.2s');
+			$('ball').setStyle('transition-duration', '.2s');
 			App.start();
 		}, 1000);
-		
+*/		
 	},
 	gameOver: function(){
 		App.stop();
-		display.message("You've lost.<br>Click or press Enter to play again.", false);
+		display.message("You've lost.<br>Click or press Enter to play again.");
 	}
 };
 
@@ -152,4 +162,8 @@ $(document).on('ready', function() {
 	App.load();
 	App.reset();
 	AppLoop();
+//	$('field').on('click', function()
+//	{
+//		physics.step();
+//	});
 });

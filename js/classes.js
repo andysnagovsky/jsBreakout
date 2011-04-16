@@ -47,7 +47,7 @@ function Field(){
 	}
 }
 function Pad(){
-	this.speed = { max: 200, x: 0}
+	this.speed = 200;
 //	this.speed = 1.5; // px per millisecond
 	this.x = 0;
 	this.source = document.getElementById("racket")
@@ -55,7 +55,7 @@ function Pad(){
 	this.height = this.source.offsetHeight;
 	this.top = this.source.offsetTop;
 	this.path = field.width - this.width;
-	var step = this.speed.max * 0.2;
+	var step = this.speed * 0.2;
 	var move = step;
 	this.left = ( this.path - this.width ) / 2;
 //	this.source.style.left = this.source.offsetLeft;
@@ -116,7 +116,7 @@ function Brick(id, type){
 	this.hit = function(){
 		if (document.getElementById(this.id)) {
 			this.hitted = true;
-			playSound("brick-low.wav", 0);
+			sound.play('brick');
 			document.getElementById(this.id).innerHTML = "";
 			document.getElementById(this.id).removeAttribute("id")
 			//document.getElementById(this.id).id = "";
@@ -162,10 +162,8 @@ function Display(){
 		}
 		post();
 	}
-	this.message = function(msg, clsbtn){
+	this.message = function(msg){
 		var messageBox = document.getElementById("message");
-		var closeButton = '\n<button onclick=\"javascript:this.parentNode.style.display = \'none\'\">Close</button>';
-		if(clsbtn) msg += closeButton;
 		messageBox.innerHTML = msg;
 		App.stop();
 		messageBox.style.display = 'table-cell';
@@ -226,21 +224,36 @@ function Stack()
 		return this.items[index];
 	}
 }
-function playSound(file, timeout){
-	var player = document.getElementById("player");
-	player.src = "sounds/"+file;
-	if (App.sounds)
-		setTimeout(function(){
-			player.play()	
-		}, timeout);
-}
 function Player(){
-	this.sounds = {}
-	this.add = function(id, snd){
-		this.sound[id] = snd;
-		audio = document.createElement('audio');
-		audio.id = id;
-		audio.setAttribute('preload', 'auto');
-		audio.setAttribute('src', 'sounds/' + snd.source);
+	this.add = function(id, file)
+	{
+		var added = document.getElementById(id);
+		if (!added)
+		{
+			var audio = document.createElement('audio');
+			audio.id = id;
+			audio.setAttribute('src', 'sounds/' + file);
+			audio.setAttribute('preload', 'auto');
+			audio.setAttribute('autobuffer', '');
+			document.body.appendChild(audio);
+			App.say('Added ' + file + '; id is ' + id);
+		}
+		else if (added.getAttribute('src') === "sounds/" + file)
+			App.say('Already added')
+		else if (added && added.getAttribute('src') != "sounds/" + file)
+			App.say('Identifier already exists');
+	}
+	this.play = function(id)
+	{
+		if (App.sounds) 
+		{
+			if (document.getElementById(id)) 
+			{
+				document.getElementById(id).play();
+				App.say('played ' + id);
+			} else
+				App.say('Wrong identifier');
+		} else
+				App.say ('Sound is disabled');
 	}
 }

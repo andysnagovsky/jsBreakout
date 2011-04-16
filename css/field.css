@@ -119,9 +119,7 @@ body{
 #ball, #racket{
 	transition: all .2s linear;
 	-webkit-transition: all .2s linear;
-	-moz-transition: all .24s linear;
-	/* Duration greater than App.cycleDuration somehow reduces FF4 problem.
-	 * Does not fix it though and adds extra crap. */
+	-moz-transition: all .228s linear;
 	-o-transition: all .2s linear;
 }
 #arrows{
